@@ -3,6 +3,29 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
         <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+
+        <!-- NuGet Package Info -->
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>Beblia.Sharp</PackageId>
+        <Title>Beblia.Sharp</Title>
+        <Version>1.0.0</Version>
+        <Authors>russkyc</Authors>
+        <Description>A C# library for parsing and loading Beblia xml bibls. Can read Bible data from XML and convert into binary .beblia format, with support for custom localizations and fast querying.</Description>
+        <Copyright>Copyright (c) 2025</Copyright>
+        <PackageLicenseExpression>Unlicense</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/russkyc/Beblia.Sharp</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/russkyc/Beblia.Sharp.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>Bible;XML;parsing;database;Christianity;Beblia</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
+
+    <ItemGroup>
+      <None Include="..\README.md">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
+    </ItemGroup>
 
 </Project>
