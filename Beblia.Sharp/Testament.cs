@@ -3,14 +3,23 @@
 namespace Beblia.Sharp
 {
     /// <summary>
-    /// Represents a testament (e.g., Old or New), containing a list of books.
+    /// Represents the testament type (Old or New Testament).
     /// </summary>
-    public class Testament
+    public enum Testament
     {
-        public string? Name { get; set; }
+        Old,
+        New
+    }
+
+    /// <summary>
+    /// Represents testament data, containing a list of books.
+    /// </summary>
+    public class TestamentData
+    {
+        public Testament Testament { get; set; }
         public List<Book> Books { get; set; }
 
-        public Testament()
+        public TestamentData()
         {
             Books = new List<Book>();
         }

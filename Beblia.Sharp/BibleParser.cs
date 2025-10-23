@@ -114,9 +114,9 @@ namespace Beblia.Sharp
                 int testamentCount = reader.ReadInt32();
                 for (int t = 0; t < testamentCount; t++)
                 {
-                    Testament testament = new Testament
+                    TestamentData testament = new TestamentData
                     {
-                        Name = reader.ReadString()
+                        Testament = (Testament)reader.ReadInt32()
                     };
                     
                     int bookCount = reader.ReadInt32();
@@ -177,9 +177,12 @@ namespace Beblia.Sharp
             // Loop through <testament> elements
             foreach (XElement testamentNode in root.Elements("testament"))
             {
-                Testament testament = new Testament
+                string? testamentName = testamentNode.Attribute("name")?.Value;
+                Testament testamentType = testamentName?.ToLowerInvariant() == "new" ? Testament.New : Testament.Old;
+                
+                TestamentData testament = new TestamentData
                 {
-                    Name = testamentNode.Attribute("name")?.Value
+                    Testament = testamentType
                 };
 
                 // Loop through <book> elements
