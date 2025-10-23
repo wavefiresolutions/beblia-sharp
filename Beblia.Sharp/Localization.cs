@@ -8,24 +8,24 @@ namespace Beblia.Sharp
     /// <summary>
     /// Provides localization mappings between book names and numbers.
     /// </summary>
-    public static class Localization
+    public class Localization
     {
         /// <summary>
         /// Maps book names (case-insensitive) to their corresponding book numbers.
         /// </summary>
-        private static Dictionary<string, int> _bookNames = new Dictionary<string, int>();
+        private Dictionary<string, int> _bookNames = new Dictionary<string, int>();
 
         /// <summary>
         /// Reverse lookup dictionary for mapping book numbers to names.
         /// </summary>
-        private static Dictionary<int, string> _bookNumbers = new Dictionary<int, string>();
+        private Dictionary<int, string> _bookNumbers = new Dictionary<int, string>();
 
         /// <summary>
         /// Maps book numbers to list of abbreviated names (first one is primary).
         /// </summary>
-        private static Dictionary<int, List<string>> _bookAbbreviations = new Dictionary<int, List<string>>();
+        private Dictionary<int, List<string>> _bookAbbreviations = new Dictionary<int, List<string>>();
 
-        static Localization()
+        public Localization()
         {
             LoadDefaultLocalization();
         }
@@ -33,7 +33,7 @@ namespace Beblia.Sharp
         /// <summary>
         /// Normalizes an abbreviation by removing periods and converting to lowercase for matching.
         /// </summary>
-        private static string NormalizeAbbreviation(string abbreviation)
+        private string NormalizeAbbreviation(string abbreviation)
         {
             return abbreviation.Replace(".", "").ToLowerInvariant();
         }
@@ -41,7 +41,7 @@ namespace Beblia.Sharp
         /// <summary>
         /// Adds a book with its abbreviations to the dictionaries.
         /// </summary>
-        private static void AddBook(int number, string fullName, params string[] abbreviations)
+        private void AddBook(int number, string fullName, params string[] abbreviations)
         {
             // Add full name
             _bookNumbers[number] = fullName;
@@ -68,7 +68,7 @@ namespace Beblia.Sharp
         /// <summary>
         /// Loads the default localization data.
         /// </summary>
-        private static void LoadDefaultLocalization()
+        private void LoadDefaultLocalization()
         {
             _bookNames = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             _bookNumbers = new Dictionary<int, string>();
@@ -151,7 +151,7 @@ namespace Beblia.Sharp
         /// (e.g., "1 Genesis Gen., Ge., Gn.")
         /// </summary>
         /// <param name="filePath">Path to the localization file.</param>
-        public static void LoadFromFile(string filePath)
+        public void LoadFromFile(string filePath)
         {
             if (!File.Exists(filePath))
             {
@@ -194,7 +194,7 @@ namespace Beblia.Sharp
         /// Format: number fullname abbreviation1, abbreviation2, abbreviation3, ...
         /// </summary>
         /// <param name="localizationData">The localization data as a string.</param>
-        public static void LoadFromString(string localizationData)
+        public void LoadFromString(string localizationData)
         {
             _bookNames = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             _bookNumbers = new Dictionary<int, string>();
@@ -232,7 +232,7 @@ namespace Beblia.Sharp
         /// </summary>
         /// <param name="bookName">The name or abbreviation of the book.</param>
         /// <returns>The book number, or null if not found.</returns>
-        public static int? GetBookNumber(string bookName)
+        public int? GetBookNumber(string bookName)
         {
             if (_bookNames.TryGetValue(bookName, out int number))
             {
@@ -246,7 +246,7 @@ namespace Beblia.Sharp
         /// </summary>
         /// <param name="bookNumber">The book number.</param>
         /// <returns>The book name, or null if not found.</returns>
-        public static string? GetBookName(int bookNumber)
+        public string? GetBookName(int bookNumber)
         {
             if (_bookNumbers.TryGetValue(bookNumber, out string? name))
             {
@@ -261,7 +261,7 @@ namespace Beblia.Sharp
         /// </summary>
         /// <param name="bookNumber">The book number.</param>
         /// <returns>The abbreviated book name, or null if not found.</returns>
-        public static string? GetBookAbbreviation(int bookNumber)
+        public string? GetBookAbbreviation(int bookNumber)
         {
             if (_bookAbbreviations.TryGetValue(bookNumber, out List<string>? abbreviations) && abbreviations.Count > 0)
             {
@@ -275,7 +275,7 @@ namespace Beblia.Sharp
         /// </summary>
         /// <param name="bookNumber">The book number.</param>
         /// <returns>A list of abbreviations, or an empty list if not found.</returns>
-        public static List<string> GetBookAbbreviations(int bookNumber)
+        public List<string> GetBookAbbreviations(int bookNumber)
         {
             if (_bookAbbreviations.TryGetValue(bookNumber, out List<string>? abbreviations))
             {
@@ -289,7 +289,7 @@ namespace Beblia.Sharp
         /// Format: number fullname abbreviation1, abbreviation2, ...
         /// </summary>
         /// <returns>Localization data as a string.</returns>
-        public static string SerializeToString()
+        public string SerializeToString()
         {
             var lines = new List<string>();
             lines.Add("# Beblia Localization File");

@@ -25,9 +25,15 @@ namespace Beblia.Sharp
         /// </summary>
         public List<TestamentData> Testaments { get; set; }
 
+        /// <summary>
+        /// The localization data for book names and abbreviations.
+        /// </summary>
+        public Localization Localization { get; set; }
+
         public Bible()
         {
             Testaments = new List<TestamentData>();
+            Localization = new Localization();
         }
 
         /// <summary>
@@ -36,7 +42,12 @@ namespace Beblia.Sharp
         /// <returns>A list of all books.</returns>
         public List<Book> GetBooks()
         {
-            return Testaments.SelectMany(t => t.Books).ToList();
+            var books = Testaments.SelectMany(t => t.Books).ToList();
+            foreach (var book in books)
+            {
+                book.SetLocalization(Localization);
+            }
+            return books;
         }
 
         /// <summary>
@@ -46,10 +57,15 @@ namespace Beblia.Sharp
         /// <returns>A list of books in the specified testament.</returns>
         public List<Book> GetBooks(Testament testament)
         {
-            return Testaments
+            var books = Testaments
                 .Where(t => t.Testament == testament)
                 .SelectMany(t => t.Books)
                 .ToList();
+            foreach (var book in books)
+            {
+                book.SetLocalization(Localization);
+            }
+            return books;
         }
 
         /// <summary>
@@ -80,8 +96,13 @@ namespace Beblia.Sharp
         public Book? GetBook(int bookNumber)
         {
             // Search all testaments and flatten the list of books
-            return Testaments.SelectMany(t => t.Books)
+            var book = Testaments.SelectMany(t => t.Books)
                              .FirstOrDefault(b => b.Number == bookNumber);
+            if (book != null)
+            {
+                book.SetLocalization(Localization);
+            }
+            return book;
         }
 
         /// <summary>

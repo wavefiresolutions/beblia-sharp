@@ -14,8 +14,9 @@ namespace Beblia.Sharp
         /// Automatically detects the file format based on content.
         /// </summary>
         /// <param name="filePath">The path to the .xml or .beblia file.</param>
+        /// <param name="localizationPath">Optional path to a custom localization file.</param>
         /// <returns>A populated Bible object.</returns>
-        public static Bible Load(string filePath)
+        public static Bible Load(string filePath, string? localizationPath = null)
         {
             if (!File.Exists(filePath))
             {
@@ -24,7 +25,7 @@ namespace Beblia.Sharp
 
             using (FileStream stream = File.OpenRead(filePath))
             {
-                return Load(stream);
+                return Load(stream, localizationPath);
             }
         }
 
@@ -32,13 +33,14 @@ namespace Beblia.Sharp
         /// Loads a Bible from an XML string.
         /// </summary>
         /// <param name="xmlContent">The string containing the Bible XML.</param>
+        /// <param name="localizationPath">Optional path to a custom localization file.</param>
         /// <returns>A populated Bible object.</returns>
-        public static Bible LoadXml(string xmlContent)
+        public static Bible LoadXml(string xmlContent, string? localizationPath = null)
         {
             using (StringReader reader = new StringReader(xmlContent))
             {
                 XDocument doc = XDocument.Load(reader);
-                return Parse(doc);
+                return Parse(doc, localizationPath);
             }
         }
 
@@ -47,8 +49,9 @@ namespace Beblia.Sharp
         /// Automatically detects the file format (XML or binary).
         /// </summary>
         /// <param name="stream">The stream containing the Bible data.</param>
+        /// <param name="localizationPath">Optional path to a custom localization file.</param>
         /// <returns>A populated Bible object.</returns>
-        public static Bible Load(Stream stream)
+        public static Bible Load(Stream stream, string? localizationPath = null)
         {
             // Peek at the first few bytes to determine format
             byte[] header = new byte[8];
@@ -68,14 +71,14 @@ namespace Beblia.Sharp
                 header[6] == (byte)'A' &&
                 (header[7] == 0x01 || header[7] == 0x02)) // Version 1 or 2
             {
-                return LoadBinary(stream);
+                return LoadBinary(stream, localizationPath);
             }
             
             // Otherwise, try to parse as XML
             try
             {
                 XDocument doc = XDocument.Load(stream);
-                return Parse(doc);
+                return Parse(doc, localizationPath);
             }
             catch (System.Xml.XmlException ex)
             {
@@ -87,8 +90,9 @@ namespace Beblia.Sharp
         /// Loads a Bible from a binary stream (.beblia format).
         /// </summary>
         /// <param name="stream">The stream containing the binary Bible data.</param>
+        /// <param name="localizationPath">Optional path to a custom localization file.</param>
         /// <returns>A populated Bible object.</returns>
-        private static Bible LoadBinary(Stream stream)
+        private static Bible LoadBinary(Stream stream, string? localizationPath = null)
         {
             using (BinaryReader reader = new BinaryReader(stream, System.Text.Encoding.UTF8, true))
             {
@@ -117,8 +121,14 @@ namespace Beblia.Sharp
                     string localizationData = reader.ReadString();
                     if (!string.IsNullOrEmpty(localizationData))
                     {
-                        Localization.LoadFromString(localizationData);
+                        bible.Localization.LoadFromString(localizationData);
                     }
+                }
+                
+                // If a custom localization file is provided, override the embedded localization
+                if (!string.IsNullOrEmpty(localizationPath) && File.Exists(localizationPath))
+                {
+                    bible.Localization.LoadFromFile(localizationPath);
                 }
                 
                 int testamentCount = reader.ReadInt32();
@@ -169,7 +179,7 @@ namespace Beblia.Sharp
         /// <summary>
         /// Private helper to parse the loaded XDocument into a Bible object.
         /// </summary>
-        private static Bible Parse(XDocument doc)
+        private static Bible Parse(XDocument doc, string? localizationPath = null)
         {
             XElement? root = doc.Root;
             if (root == null || root.Name.LocalName != "bible")
@@ -183,6 +193,12 @@ namespace Beblia.Sharp
                 Translation = root.Attribute("translation")?.Value,
                 Status = root.Attribute("status")?.Value
             };
+
+            // If a custom localization file is provided, load it
+            if (!string.IsNullOrEmpty(localizationPath) && File.Exists(localizationPath))
+            {
+                bible.Localization.LoadFromFile(localizationPath);
+            }
 
             // Loop through <testament> elements
             foreach (XElement testamentNode in root.Elements("testament"))

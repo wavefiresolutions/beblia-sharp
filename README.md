@@ -41,6 +41,9 @@ var bible = BibleParser.Load("EnglishKJV.xml");
 // Load from binary - same API!
 var bible = BibleParser.Load("EnglishKJV.beblia");
 
+// Load with custom localization file
+var bible = BibleParser.Load("EnglishKJV.beblia", "localization.txt");
+
 // The format is auto-detected
 ```
 
@@ -100,11 +103,21 @@ var verses = bible.GetVerses(genesis1);
 
 **New in v2:** Localization data is now automatically embedded in binary `.beblia` files and loaded automatically. Each book supports multiple abbreviations, and abbreviations work with or without periods (e.g., both "Gen." and "Gen" work).
 
-You can also customize book names and abbreviations by loading a localization file:
+Localization is managed per Bible instance and can be customized in two ways:
 
+1. **Load a custom localization file when loading the Bible:**
 ```csharp
-// Load custom localization from file
-Localization.LoadFromFile("localization.txt");
+// Load Bible with custom localization
+var bible = BibleParser.Load("EnglishKJBible.beblia", "localization.txt");
+```
+
+2. **Load custom localization on an existing Bible instance:**
+```csharp
+// Load Bible
+var bible = BibleParser.Load("EnglishKJBible.beblia");
+
+// Load custom localization
+bible.Localization.LoadFromFile("localization.txt");
 ```
 
 Localization file format (one book per line, with multiple comma-separated abbreviations):
@@ -122,6 +135,7 @@ Localization file format (one book per line, with multiple comma-separated abbre
 - Abbreviations work with or without periods (e.g., "Gen" and "Gen." both work)
 - Case-insensitive matching (e.g., "GEN", "Gen", "gen" all work)
 - Localization automatically embedded in `.beblia` files (v2 format)
+- Each Bible instance has its own localization settings
 
 ### Saving to Binary Format
 
@@ -184,4 +198,27 @@ dotnet run --project ConsoleSample
 
 ## License
 
-This is free and unencumbered software released into the public domain. See the UNLICENSE file for details.
+This is free and unencumbered software released into the public domain. See the LICENSE.md file for details.
+
+**Permission Statement:** There is no need for permission to use this software as long as it is used for the Glorification of Christ alone. *Soli Deo Gloria*.
+
+## Attribution
+
+This library uses Bible data in XML format from the [Beblia Holy-Bible-XML-Format](https://github.com/Beblia/Holy-Bible-XML-Format) project:
+
+> **Bible in XML**
+> 
+> Welcome. Here you will find XML Bibles from various languages, created from the past 15 years.
+> 200+ Languages and 1000+ Bible Versions.
+> Any questions or comments: andrey@beblia.com
+> 
+> Use at your own discretion, no need to ask for permission, no warranty's.
+> 
+> Author: Proud Slave of Christ
+> 
+> Visit our site: https://beblia.com
+> 
+> God Bless.
+> Thank you.
+
+We are grateful for their work in making these Bible texts available.
