@@ -146,6 +146,157 @@ namespace Beblia.Sharp
         }
 
         /// <summary>
+        /// Parses a single line from the localization data to extract book number, name, and abbreviations.
+        /// </summary>
+        /// <param name="trimmedLine">The trimmed line to parse.</param>
+        /// <param name="bookNumber">Output: the parsed book number.</param>
+        /// <param name="bookFullName">Output: the parsed book name.</param>
+        /// <param name="bookAbbreviations">Output: the parsed abbreviations.</param>
+        /// <returns>True if parsing succeeded, false otherwise.</returns>
+        private bool ParseLocalizationLine(string trimmedLine, out int bookNumber, out string bookFullName, out string[] bookAbbreviations)
+        {
+            bookNumber = 0;
+            bookFullName = string.Empty;
+            bookAbbreviations = Array.Empty<string>();
+
+            // Parse format: "number fullname abbreviation1, abbreviation2, ..."
+            // First, extract the book number
+            int spaceIndex = trimmedLine.IndexOf(' ');
+            if (spaceIndex < 0)
+            {
+                return false; // Invalid format
+            }
+            
+            string bookNumberStr = trimmedLine.Substring(0, spaceIndex);
+            if (!int.TryParse(bookNumberStr, out bookNumber))
+            {
+                return false; // Invalid book number
+            }
+
+            // Remaining line contains: "fullname abbreviation1, abbreviation2, ..."
+            string remainingLine = trimmedLine.Substring(spaceIndex + 1).TrimStart();
+            
+            // Strategy: Split by commas to get all parts.
+            // The book name is everything before the first abbreviation.
+            // The first part (before the first comma) contains both the book name and first abbreviation.
+            string[] commaSplit = remainingLine.Split(',');
+            
+            if (commaSplit.Length == 0)
+            {
+                return false; // Invalid format
+            }
+            
+            // The first comma-delimited part contains: "bookname firstabbrev"
+            string firstPart = commaSplit[0].Trim();
+            
+            // We need to split firstPart into book name and first abbreviation.
+            string[] words = firstPart.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            
+            if (words.Length == 1)
+            {
+                // Single word - use it as both name and abbreviation
+                bookFullName = words[0];
+                bookAbbreviations = commaSplit.Select(a => a.Trim()).Where(a => !string.IsNullOrEmpty(a)).ToArray();
+            }
+            else
+            {
+                // Multiple words - need to find the split point
+                int bestSplitIndex = words.Length - 1; // Default: last word is the abbreviation
+                
+                // Look for indicators that suggest where the abbreviation starts:
+                // 1. If a word contains a period, it's likely an abbreviation
+                // 2. We also need to check if the word before the period is a number (part of the abbreviation)
+                bool foundPeriod = false;
+                for (int i = 1; i < words.Length; i++)
+                {
+                    string potentialAbbrev = words[i];
+                    // If this word contains a period and previous words in book name don't, split here
+                    if (potentialAbbrev.Contains("."))
+                    {
+                        bool previousHasPeriod = false;
+                        for (int j = 0; j < i; j++)
+                        {
+                            if (words[j].Contains("."))
+                            {
+                                previousHasPeriod = true;
+                                break;
+                            }
+                        }
+                        if (!previousHasPeriod)
+                        {
+                            bestSplitIndex = i;
+                            foundPeriod = true;
+                            
+                            // Check if the word before this period word is a number or roman numeral
+                            // If so, it's part of the abbreviation, so move split point back
+                            if (i > 0)
+                            {
+                                string prevWord = words[i - 1];
+                                // Check if previous word is a number (1, 2, 3) or roman numeral (I, II, III)
+                                bool isNumber = int.TryParse(prevWord, out _);
+                                bool isRomanNumeral = prevWord == "I" || prevWord == "II" || prevWord == "III" || 
+                                                     prevWord == "IV" || prevWord == "V";
+                                if (isNumber || isRomanNumeral)
+                                {
+                                    // The previous word is part of the abbreviation
+                                    // But only if it's not also the first word (which would be part of book name)
+                                    if (i > 1)
+                                    {
+                                        bestSplitIndex = i - 1;
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                
+                // If no period was found, check if the first part equals the entire book name
+                // (e.g., "1 Kings 1 Kings" where "1 Kings" is both the name and first abbreviation)
+                if (!foundPeriod)
+                {
+                    // Check if firstPart is a repeat of the first half
+                    int halfLength = words.Length / 2;
+                    if (words.Length % 2 == 0 && halfLength > 0)
+                    {
+                        bool isRepeat = true;
+                        for (int i = 0; i < halfLength; i++)
+                        {
+                            if (words[i] != words[halfLength + i])
+                            {
+                                isRepeat = false;
+                                break;
+                            }
+                        }
+                        if (isRepeat)
+                        {
+                            // First half is repeated, so use first half as book name
+                            bestSplitIndex = halfLength;
+                        }
+                    }
+                }
+                
+                // Build book name from words before split point
+                bookFullName = string.Join(" ", words, 0, bestSplitIndex);
+                
+                // Build abbreviations list
+                string firstAbbrev = string.Join(" ", words, bestSplitIndex, words.Length - bestSplitIndex);
+                var abbrevList = new List<string> { firstAbbrev };
+                for (int i = 1; i < commaSplit.Length; i++)
+                {
+                    string abbrev = commaSplit[i].Trim();
+                    if (!string.IsNullOrEmpty(abbrev))
+                    {
+                        abbrevList.Add(abbrev);
+                    }
+                }
+                bookAbbreviations = abbrevList.ToArray();
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Loads localization from a text file.
         /// Format: number fullname abbreviation1, abbreviation2, abbreviation3, ...
         /// (e.g., "1 Genesis Gen., Ge., Gn.")
@@ -170,21 +321,9 @@ namespace Beblia.Sharp
                     continue; // Skip empty lines and comments
                 }
 
-                // Split by space, max 3 parts: number, fullname, and rest (abbreviations)
-                string[] parts = trimmedLine.Split(new[] { ' ' }, 3, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length >= 3 && int.TryParse(parts[0], out int bookNumber))
+                if (ParseLocalizationLine(trimmedLine, out int bookNumber, out string bookFullName, out string[] bookAbbreviations))
                 {
-                    string fullName = parts[1];
-                    string abbreviationsStr = parts[2];
-
-                    // Parse abbreviations (comma-separated)
-                    string[] abbreviations = abbreviationsStr.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(a => a.Trim())
-                        .Where(a => !string.IsNullOrEmpty(a))
-                        .ToArray();
-
-                    // Use AddBook helper to add all mappings
-                    AddBook(bookNumber, fullName, abbreviations);
+                    AddBook(bookNumber, bookFullName, bookAbbreviations);
                 }
             }
         }
@@ -208,21 +347,9 @@ namespace Beblia.Sharp
                     continue; // Skip empty lines and comments
                 }
 
-                // Split by space, max 3 parts: number, fullname, and rest (abbreviations)
-                string[] parts = trimmedLine.Split(new[] { ' ' }, 3, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length >= 3 && int.TryParse(parts[0], out int bookNumber))
+                if (ParseLocalizationLine(trimmedLine, out int bookNumber, out string bookFullName, out string[] bookAbbreviations))
                 {
-                    string fullName = parts[1];
-                    string abbreviationsStr = parts[2];
-
-                    // Parse abbreviations (comma-separated)
-                    string[] abbreviations = abbreviationsStr.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(a => a.Trim())
-                        .Where(a => !string.IsNullOrEmpty(a))
-                        .ToArray();
-
-                    // Use AddBook helper to add all mappings
-                    AddBook(bookNumber, fullName, abbreviations);
+                    AddBook(bookNumber, bookFullName, bookAbbreviations);
                 }
             }
         }
