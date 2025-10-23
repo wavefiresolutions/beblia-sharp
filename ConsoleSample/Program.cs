@@ -66,9 +66,9 @@ foreach (var verse in john31_2)
 
 // Test 10: Book name lookup
 Console.WriteLine($"\n=== Localization ===");
-Console.WriteLine($"Book 40 is: {Localization.GetBookName(40)}");
-Console.WriteLine($"Matthew is book number: {Localization.GetBookNumber("Matthew")}");
-Console.WriteLine($"Case-insensitive: 'matthew' = {Localization.GetBookNumber("matthew")}");
-Console.WriteLine($"Abbreviation: 'Mat' = {Localization.GetBookNumber("Mat")}");
+Console.WriteLine($"Book 40 is: {bibleBinary.Localization.GetBookName(40)}");
+Console.WriteLine($"Matthew is book number: {bibleBinary.Localization.GetBookNumber("Matthew")}");
+Console.WriteLine($"Case-insensitive: 'matthew' = {bibleBinary.Localization.GetBookNumber("matthew")}");
+Console.WriteLine($"Abbreviation: 'Mat' = {bibleBinary.Localization.GetBookNumber("Mat")}");
 
 Console.WriteLine("\n✓ All tests completed successfully!");
