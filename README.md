@@ -8,6 +8,7 @@ A C# library for parsing and loading Bible data from XML and binary formats.
 - **Binary Format**: Efficient binary format (.beblia) for faster loading and smaller file size
 - **Format Auto-Detection**: Automatically detects whether a file is XML or binary
 - **Query Methods**: Easy-to-use methods to query verses, chapters, and books
+- **Verse Metadata**: All verses include book name, book number, and chapter number metadata
 - **Book Name Support**: Query using book names (e.g., "Genesis", "Matthew") or abbreviations (e.g., "Gen", "Jn") - case-insensitive
 - **Multiple Abbreviations**: Each book supports multiple abbreviations (e.g., "John", "Joh", "Jhn", "Jn")
 - **Period-Flexible Matching**: Abbreviations work with or without periods (e.g., "Gen" and "Gen." both work)
@@ -67,6 +68,13 @@ var verse4 = bible.GetVerse("GEN", 1, 1); // Also works
 var verses = bible.Get("JN 3:16"); // Single verse
 var verses2 = bible.Get("JOHN 3:1-2"); // Verse range
 var verses3 = bible.Get("JN 3:1,4,5-6"); // Multiple verses and ranges
+
+// Verses returned include book and chapter metadata
+foreach (var verse in verses)
+{
+    Console.WriteLine($"{verse.BookName} {verse.ChapterNumber}:{verse.Number}");
+    Console.WriteLine($"Book #{verse.BookNumber}: {verse.Text}");
+}
 
 // Get a chapter
 var chapter = bible.GetChapter("John", 3);
