@@ -1,13 +1,18 @@
-name: Release NuGet Package
+name: Build and Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - '**'
+  pull_request:
+    types: [closed]
+    branches:
+      - '**'
 
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     
     steps:
     - name: Checkout code
@@ -23,6 +28,7 @@ jobs:
       run: |
         VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" Beblia.Sharp/Beblia.Sharp.csproj)
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "tag=v$VERSION" >> $GITHUB_OUTPUT
         echo "Extracted version: $VERSION"
         
     - name: Restore dependencies
@@ -34,41 +40,119 @@ jobs:
     - name: Pack NuGet package
       run: dotnet pack Beblia.Sharp/Beblia.Sharp.csproj --configuration Release --no-build --output ./artifacts
       
-    - name: Create Release
+    - name: Check if release exists
+      id: check_release
+      run: |
+        TAG_NAME="v${{ steps.get_version.outputs.version }}"
+        echo "Checking for release with tag: $TAG_NAME"
+        
+        RELEASE_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME" \
+          | jq -r '.id // empty')
+        
+        if [ -n "$RELEASE_ID" ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+          echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
+          echo "Release exists with ID: $RELEASE_ID"
+          
+          # Get upload URL for existing release
+          UPLOAD_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID" \
+            | jq -r '.upload_url')
+          echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "Release does not exist"
+        fi
+      
+    - name: Delete existing assets if release exists
+      if: steps.check_release.outputs.exists == 'true'
+      run: |
+        RELEASE_ID="${{ steps.check_release.outputs.release_id }}"
+        echo "Deleting old assets from release ID: $RELEASE_ID"
+        
+        # Get all assets for the release
+        ASSETS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID/assets")
+        
+        # Delete each asset
+        echo "$ASSETS" | jq -r '.[].id' | while read ASSET_ID; do
+          if [ -n "$ASSET_ID" ]; then
+            echo "Deleting asset ID: $ASSET_ID"
+            curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/assets/$ASSET_ID"
+          fi
+        done
+        
+    - name: Create new release if it doesn't exist
+      if: steps.check_release.outputs.exists == 'false'
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref_name }}
-        release_name: Release ${{ github.ref_name }}
-        body: |
-          Release version ${{ steps.get_version.outputs.version }}
-          
-          ## NuGet Package
-          - Beblia.Sharp.${{ steps.get_version.outputs.version }}.nupkg
-          
-          ## DLL
-          - Beblia.Sharp.dll (netstandard2.1)
-        draft: false
-        prerelease: false
+      run: |
+        TAG_NAME="v${{ steps.get_version.outputs.version }}"
+        echo "Creating new release with tag: $TAG_NAME"
+        
+        # Create tag first (skip if already exists)
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        # Check if tag exists and create only if it doesn't
+        if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+          echo "Tag $TAG_NAME already exists, skipping tag creation"
+        else
+          git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+          git push origin "$TAG_NAME"
+          echo "Created and pushed tag $TAG_NAME"
+        fi
+        
+        # Create release
+        RESPONSE=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          "https://api.github.com/repos/${{ github.repository }}/releases" \
+          -d '{
+            "tag_name": "'"$TAG_NAME"'",
+            "name": "Release '"$TAG_NAME"'",
+            "body": "Release version ${{ steps.get_version.outputs.version }}\n\n## NuGet Package\n- Beblia.Sharp.${{ steps.get_version.outputs.version }}.nupkg\n\n## DLL\n- Beblia.Sharp.dll (netstandard2.1)",
+            "draft": false,
+            "prerelease": false
+          }')
+        
+        UPLOAD_URL=$(echo "$RESPONSE" | jq -r '.upload_url')
+        echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
+        echo "Created release with upload URL: $UPLOAD_URL"
+        
+    - name: Set upload URL
+      id: set_upload_url
+      run: |
+        if [ "${{ steps.check_release.outputs.exists }}" == "true" ]; then
+          echo "Using existing release for artifact upload"
+          echo "upload_url=${{ steps.check_release.outputs.upload_url }}" >> $GITHUB_OUTPUT
+        else
+          echo "Using newly created release for artifact upload"
+          echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_OUTPUT
+        fi
         
     - name: Upload NuGet Package to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./artifacts/Beblia.Sharp.${{ steps.get_version.outputs.version }}.nupkg
-        asset_name: Beblia.Sharp.${{ steps.get_version.outputs.version }}.nupkg
-        asset_content_type: application/zip
+      run: |
+        echo "Uploading NuGet package: Beblia.Sharp.${{ steps.get_version.outputs.version }}.nupkg"
+        UPLOAD_URL="${{ steps.set_upload_url.outputs.upload_url }}"
+        UPLOAD_URL="${UPLOAD_URL%\{*}"  # Remove {?name,label} part
+        
+        curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Content-Type: application/zip" \
+          --data-binary @"./artifacts/Beblia.Sharp.${{ steps.get_version.outputs.version }}.nupkg" \
+          "${UPLOAD_URL}?name=Beblia.Sharp.${{ steps.get_version.outputs.version }}.nupkg"
+        
+        echo "NuGet package uploaded successfully"
         
     - name: Upload DLL to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./Beblia.Sharp/bin/Release/netstandard2.1/Beblia.Sharp.dll
-        asset_name: Beblia.Sharp.dll
-        asset_content_type: application/octet-stream
+      run: |
+        echo "Uploading DLL: Beblia.Sharp.dll"
+        UPLOAD_URL="${{ steps.set_upload_url.outputs.upload_url }}"
+        UPLOAD_URL="${UPLOAD_URL%\{*}"  # Remove {?name,label} part
+        
+        curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Content-Type: application/octet-stream" \
+          --data-binary @"./Beblia.Sharp/bin/Release/netstandard2.1/Beblia.Sharp.dll" \
+          "${UPLOAD_URL}?name=Beblia.Sharp.dll"
+        
+        echo "DLL uploaded successfully"
