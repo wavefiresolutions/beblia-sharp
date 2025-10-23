@@ -1,0 +1,73 @@
+# Beblia Localization File
+# Format: number abbreviation fullname
+# Lines starting with # are comments
+
+# Old Testament
+1 Gen Genesis
+2 Exo Exodus
+3 Lev Leviticus
+4 Num Numbers
+5 Deu Deuteronomy
+6 Jos Joshua
+7 Jdg Judges
+8 Rut Ruth
+9 1Sa 1 Samuel
+10 2Sa 2 Samuel
+11 1Ki 1 Kings
+12 2Ki 2 Kings
+13 1Ch 1 Chronicles
+14 2Ch 2 Chronicles
+15 Ezr Ezra
+16 Neh Nehemiah
+17 Est Esther
+18 Job Job
+19 Psa Psalms
+20 Pro Proverbs
+21 Ecc Ecclesiastes
+22 Sng Song of Solomon
+23 Isa Isaiah
+24 Jer Jeremiah
+25 Lam Lamentations
+26 Eze Ezekiel
+27 Dan Daniel
+28 Hos Hosea
+29 Joe Joel
+30 Amo Amos
+31 Oba Obadiah
+32 Jon Jonah
+33 Mic Micah
+34 Nah Nahum
+35 Hab Habakkuk
+36 Zep Zephaniah
+37 Hag Haggai
+38 Zec Zechariah
+39 Mal Malachi
+
+# New Testament
+40 Mat Matthew
+41 Mrk Mark
+42 Luk Luke
+43 Joh John
+44 Act Acts
+45 Rom Romans
+46 1Co 1 Corinthians
+47 2Co 2 Corinthians
+48 Gal Galatians
+49 Eph Ephesians
+50 Phi Philippians
+51 Col Colossians
+52 1Th 1 Thessalonians
+53 2Th 2 Thessalonians
+54 1Ti 1 Timothy
+55 2Ti 2 Timothy
+56 Tit Titus
+57 Phm Philemon
+58 Heb Hebrews
+59 Jam James
+60 1Pe 1 Peter
+61 2Pe 2 Peter
+62 1Jo 1 John
+63 2Jo 2 John
+64 3Jo 3 John
+65 Jud Jude
+66 Rev Revelation

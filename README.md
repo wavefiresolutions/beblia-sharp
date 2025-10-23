@@ -8,7 +8,10 @@ A C# library for parsing and loading Bible data from XML and binary formats.
 - **Binary Format**: Efficient binary format (.beblia) for faster loading and smaller file size
 - **Format Auto-Detection**: Automatically detects whether a file is XML or binary
 - **Query Methods**: Easy-to-use methods to query verses, chapters, and books
-- **Book Name Support**: Query using book names (e.g., "Genesis", "Matthew")
+- **Book Name Support**: Query using book names (e.g., "Genesis", "Matthew") or abbreviations (e.g., "Gen", "Jn") - case-insensitive
+- **Testament Enum**: Testament type is now an enum (Old/New)
+- **Quick Search**: Search for verses using natural reference formats like "JN 3:16" or "JOHN 3:1-5"
+- **Editable Localization**: Load custom book names and abbreviations from a text file
 - **Converter Tool**: Command-line tool to convert XML Bibles to binary format
 
 ## Projects
@@ -45,15 +48,68 @@ var bible = BibleParser.Load("EnglishKJV.beblia");
 var verse = bible.GetVerse(1, 1, 1); // Genesis 1:1
 Console.WriteLine(verse?.Text);
 
-// Get verse by book name
+// Get verse by book name (case-insensitive)
 var verse = bible.GetVerse("Genesis", 1, 1);
+var verse2 = bible.GetVerse("genesis", 1, 1); // Also works
 Console.WriteLine(verse?.Text);
+
+// Get verse by abbreviation (case-insensitive)
+var verse3 = bible.GetVerse("Gen", 1, 1);
+var verse4 = bible.GetVerse("GEN", 1, 1); // Also works
+
+// Quick search with reference string
+var verses = bible.Get("JN 3:16"); // Single verse
+var verses2 = bible.Get("JOHN 3:1-2"); // Verse range
+var verses3 = bible.Get("JN 3:1,4,5-6"); // Multiple verses and ranges
 
 // Get a chapter
 var chapter = bible.GetChapter("John", 3);
 
 // Get a book
 var book = bible.GetBook("Romans");
+```
+
+### Getting Books, Chapters, and Verses
+
+```csharp
+// Get all books in the Bible (returns list without nested chapters/verses)
+var allBooks = bible.GetBooks();
+Console.WriteLine($"Total books: {allBooks.Count}");
+foreach (var book in allBooks)
+{
+    Console.WriteLine($"{book.Number}. {book.Name} ({book.Abbreviation})");
+}
+
+// Get books by testament
+var oldTestamentBooks = bible.GetBooks(Testament.Old);
+var newTestamentBooks = bible.GetBooks(Testament.New);
+
+// Get all chapters in a book (returns list without nested verses)
+var genesis = bible.GetBook(1);
+var chapters = bible.GetChapters(genesis);
+
+// Get all verses in a chapter (with text)
+var genesis1 = bible.GetChapter(1, 1);
+var verses = bible.GetVerses(genesis1);
+```
+
+### Custom Localization
+
+You can customize book names and abbreviations by loading a localization file:
+
+```csharp
+// Load custom localization from file
+Localization.LoadFromFile("localization.txt");
+```
+
+Localization file format (one book per line):
+```
+# Format: number abbreviation fullname
+1 Gen Genesis
+2 Exo Exodus
+...
+43 Joh John
+...
 ```
 
 ### Saving to Binary Format
@@ -112,4 +168,4 @@ dotnet run --project ConsoleSample
 
 ## License
 
-See the LICENSE file for details.
+This is free and unencumbered software released into the public domain. See the UNLICENSE file for details.
