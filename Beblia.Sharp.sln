@@ -1,8 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beblia.Sharp", "Beblia.Sharp\Beblia.Sharp.csproj", "{52AF1D03-C819-49B8-B5C0-614919DF0F7F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleSample", "ConsoleSample\ConsoleSample.csproj", "{D80E7995-0012-4346-AB3A-59C475527F8E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beblia.Converter", "Beblia.Converter\Beblia.Converter.csproj", "{B8A3BC15-4E3F-4933-A8EC-791903B8843A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +21,9 @@ Global
 		{D80E7995-0012-4346-AB3A-59C475527F8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D80E7995-0012-4346-AB3A-59C475527F8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D80E7995-0012-4346-AB3A-59C475527F8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8A3BC15-4E3F-4933-A8EC-791903B8843A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8A3BC15-4E3F-4933-A8EC-791903B8843A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8A3BC15-4E3F-4933-A8EC-791903B8843A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8A3BC15-4E3F-4933-A8EC-791903B8843A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
