@@ -1,73 +1,73 @@
 # Beblia Localization File
-# Format: number abbreviation fullname
+# Format: number fullname abbreviation1, abbreviation2, abbreviation3, ...
 # Lines starting with # are comments
 
 # Old Testament
-1 Gen Genesis
-2 Exo Exodus
-3 Lev Leviticus
-4 Num Numbers
-5 Deu Deuteronomy
-6 Jos Joshua
-7 Jdg Judges
-8 Rut Ruth
-9 1Sa 1 Samuel
-10 2Sa 2 Samuel
-11 1Ki 1 Kings
-12 2Ki 2 Kings
-13 1Ch 1 Chronicles
-14 2Ch 2 Chronicles
-15 Ezr Ezra
-16 Neh Nehemiah
-17 Est Esther
-18 Job Job
-19 Psa Psalms
-20 Pro Proverbs
-21 Ecc Ecclesiastes
-22 Sng Song of Solomon
-23 Isa Isaiah
-24 Jer Jeremiah
-25 Lam Lamentations
-26 Eze Ezekiel
-27 Dan Daniel
-28 Hos Hosea
-29 Joe Joel
-30 Amo Amos
-31 Oba Obadiah
-32 Jon Jonah
-33 Mic Micah
-34 Nah Nahum
-35 Hab Habakkuk
-36 Zep Zephaniah
-37 Hag Haggai
-38 Zec Zechariah
-39 Mal Malachi
+1 Genesis Gen., Ge., Gn.
+2 Exodus Ex., Exod., Exo.
+3 Leviticus Lev., Le., Lv.
+4 Numbers Num., Nu., Nm., Nb.
+5 Deuteronomy Deut., De., Dt.
+6 Joshua Josh., Jos., Jsh.
+7 Judges Judg., Jdg., Jg., Jdgs.
+8 Ruth Ruth, Rth., Ru.
+9 1 Samuel 1 Sam., 1 Sm., 1 Sa., I Sam., 1st Samuel
+10 2 Samuel 2 Sam., 2 Sm., 2 Sa., II Sam., 2nd Samuel
+11 1 Kings 1 Kings, 1 Kgs, 1 Ki, I Kgs, 1st Kings
+12 2 Kings 2 Kings, 2 Kgs., 2 Ki., II Kgs., 2nd Kings
+13 1 Chronicles 1 Chron., 1 Chr., 1 Ch., I Chron., 1st Chronicles
+14 2 Chronicles 2 Chron., 2 Chr., 2 Ch., II Chron., 2nd Chronicles
+15 Ezra Ezra, Ezr., Ez.
+16 Nehemiah Neh., Ne.
+17 Esther Est., Esth., Es.
+18 Job Job, Jb.
+19 Psalms Ps., Pslm., Psa., Psm., Pss.
+20 Proverbs Prov., Pro., Prv., Pr.
+21 Ecclesiastes Eccles., Eccle., Ecc., Ec., Qoh.
+22 Song of Solomon Song, SOS., Cant.
+23 Isaiah Isa., Is.
+24 Jeremiah Jer., Je., Jr.
+25 Lamentations Lam., La.
+26 Ezekiel Ezek., Eze., Ezk.
+27 Daniel Dan., Da., Dn.
+28 Hosea Hos., Ho.
+29 Joel Joel, Jl.
+30 Amos Amos, Am.
+31 Obadiah Obad., Ob.
+32 Jonah Jonah, Jnh., Jon.
+33 Micah Mic., Mc.
+34 Nahum Nah., Na.
+35 Habakkuk Hab., Hb.
+36 Zephaniah Zeph., Zep., Zp.
+37 Haggai Hag., Hg.
+38 Zechariah Zech., Zec., Zc.
+39 Malachi Mal., Ml.
 
 # New Testament
-40 Mat Matthew
-41 Mrk Mark
-42 Luk Luke
-43 Joh John
-44 Act Acts
-45 Rom Romans
-46 1Co 1 Corinthians
-47 2Co 2 Corinthians
-48 Gal Galatians
-49 Eph Ephesians
-50 Phi Philippians
-51 Col Colossians
-52 1Th 1 Thessalonians
-53 2Th 2 Thessalonians
-54 1Ti 1 Timothy
-55 2Ti 2 Timothy
-56 Tit Titus
-57 Phm Philemon
-58 Heb Hebrews
-59 Jam James
-60 1Pe 1 Peter
-61 2Pe 2 Peter
-62 1Jo 1 John
-63 2Jo 2 John
-64 3Jo 3 John
-65 Jud Jude
-66 Rev Revelation
+40 Matthew Matt., Mt.
+41 Mark Mark, Mrk, Mk, Mr.
+42 Luke Luke, Luk, Lk
+43 John John, Joh, Jhn, Jn
+44 Acts Acts, Act, Ac
+45 Romans Rom., Ro., Rm.
+46 1 Corinthians 1 Cor., 1 Co., I Cor., 1st Corinthians
+47 2 Corinthians 2 Cor., 2 Co., II Cor., 2nd Corinthians
+48 Galatians Gal., Ga.
+49 Ephesians Eph., Ephes.
+50 Philippians Phil., Php., Pp.
+51 Colossians Col., Co.
+52 1 Thessalonians 1 Thess., 1 Thes., I Thess., 1st Thessalonians
+53 2 Thessalonians 2 Thess., 2 Thes., II Thess., 2nd Thessalonians
+54 1 Timothy 1 Tim., 1 Ti., I Tim., 1st Timothy
+55 2 Timothy 2 Tim., 2 Ti., II Tim., 2nd Timothy
+56 Titus Titus, Tit, Ti
+57 Philemon Philem., Phm., Pm.
+58 Hebrews Heb.
+59 James James, Jas, Jm
+60 1 Peter 1 Pet., 1 Pe., I Pet., 1st Peter
+61 2 Peter 2 Pet., 2 Pe., II Pet., 2nd Peter
+62 1 John 1 John, 1 Jhn., I John, 1st John
+63 2 John 2 John, 2 Jhn., II John, 2nd John
+64 3 John 3 John, 3 Jhn., III John, 3rd John
+65 Jude Jude, Jud., Jd.
+66 Revelation Rev., Re.

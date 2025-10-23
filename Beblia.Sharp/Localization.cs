@@ -16,19 +16,14 @@ namespace Beblia.Sharp
         private static Dictionary<string, int> _bookNames = new Dictionary<string, int>();
 
         /// <summary>
-        /// Maps book names to abbreviated names (case-insensitive).
-        /// </summary>
-        private static Dictionary<string, string> _abbreviations = new Dictionary<string, string>();
-
-        /// <summary>
         /// Reverse lookup dictionary for mapping book numbers to names.
         /// </summary>
         private static Dictionary<int, string> _bookNumbers = new Dictionary<int, string>();
 
         /// <summary>
-        /// Maps book numbers to abbreviated names.
+        /// Maps book numbers to list of abbreviated names (first one is primary).
         /// </summary>
-        private static Dictionary<int, string> _bookAbbreviations = new Dictionary<int, string>();
+        private static Dictionary<int, List<string>> _bookAbbreviations = new Dictionary<int, List<string>>();
 
         static Localization()
         {
@@ -36,183 +31,124 @@ namespace Beblia.Sharp
         }
 
         /// <summary>
+        /// Normalizes an abbreviation by removing periods and converting to lowercase for matching.
+        /// </summary>
+        private static string NormalizeAbbreviation(string abbreviation)
+        {
+            return abbreviation.Replace(".", "").ToLowerInvariant();
+        }
+
+        /// <summary>
+        /// Adds a book with its abbreviations to the dictionaries.
+        /// </summary>
+        private static void AddBook(int number, string fullName, params string[] abbreviations)
+        {
+            // Add full name
+            _bookNumbers[number] = fullName;
+            _bookNames[fullName] = number;
+            
+            // Store abbreviations
+            _bookAbbreviations[number] = new List<string>(abbreviations);
+            
+            // Add all abbreviations (with and without periods) to bookNames
+            foreach (var abbrev in abbreviations)
+            {
+                // Add the abbreviation as-is
+                _bookNames[abbrev] = number;
+                
+                // Also add normalized version (without periods)
+                string normalized = NormalizeAbbreviation(abbrev);
+                if (normalized != abbrev.ToLowerInvariant())
+                {
+                    _bookNames[normalized] = number;
+                }
+            }
+        }
+
+        /// <summary>
         /// Loads the default localization data.
         /// </summary>
         private static void LoadDefaultLocalization()
         {
-            _bookNames = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
-            {
-                // Old Testament
-                { "Genesis", 1 },
-                { "Exodus", 2 },
-                { "Leviticus", 3 },
-                { "Numbers", 4 },
-                { "Deuteronomy", 5 },
-                { "Joshua", 6 },
-                { "Judges", 7 },
-                { "Ruth", 8 },
-                { "1 Samuel", 9 },
-                { "2 Samuel", 10 },
-                { "1 Kings", 11 },
-                { "2 Kings", 12 },
-                { "1 Chronicles", 13 },
-                { "2 Chronicles", 14 },
-                { "Ezra", 15 },
-                { "Nehemiah", 16 },
-                { "Esther", 17 },
-                { "Job", 18 },
-                { "Psalms", 19 },
-                { "Proverbs", 20 },
-                { "Ecclesiastes", 21 },
-                { "Song of Solomon", 22 },
-                { "Isaiah", 23 },
-                { "Jeremiah", 24 },
-                { "Lamentations", 25 },
-                { "Ezekiel", 26 },
-                { "Daniel", 27 },
-                { "Hosea", 28 },
-                { "Joel", 29 },
-                { "Amos", 30 },
-                { "Obadiah", 31 },
-                { "Jonah", 32 },
-                { "Micah", 33 },
-                { "Nahum", 34 },
-                { "Habakkuk", 35 },
-                { "Zephaniah", 36 },
-                { "Haggai", 37 },
-                { "Zechariah", 38 },
-                { "Malachi", 39 },
+            _bookNames = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            _bookNumbers = new Dictionary<int, string>();
+            _bookAbbreviations = new Dictionary<int, List<string>>();
 
-                // New Testament
-                { "Matthew", 40 },
-                { "Mark", 41 },
-                { "Luke", 42 },
-                { "John", 43 },
-                { "Acts", 44 },
-                { "Romans", 45 },
-                { "1 Corinthians", 46 },
-                { "2 Corinthians", 47 },
-                { "Galatians", 48 },
-                { "Ephesians", 49 },
-                { "Philippians", 50 },
-                { "Colossians", 51 },
-                { "1 Thessalonians", 52 },
-                { "2 Thessalonians", 53 },
-                { "1 Timothy", 54 },
-                { "2 Timothy", 55 },
-                { "Titus", 56 },
-                { "Philemon", 57 },
-                { "Hebrews", 58 },
-                { "James", 59 },
-                { "1 Peter", 60 },
-                { "2 Peter", 61 },
-                { "1 John", 62 },
-                { "2 John", 63 },
-                { "3 John", 64 },
-                { "Jude", 65 },
-                { "Revelation", 66 }
-            };
+            // Old Testament
+            AddBook(1, "Genesis", "Gen.", "Ge.", "Gn.");
+            AddBook(2, "Exodus", "Ex.", "Exod.", "Exo.");
+            AddBook(3, "Leviticus", "Lev.", "Le.", "Lv.");
+            AddBook(4, "Numbers", "Num.", "Nu.", "Nm.", "Nb.");
+            AddBook(5, "Deuteronomy", "Deut.", "De.", "Dt.");
+            AddBook(6, "Joshua", "Josh.", "Jos.", "Jsh.");
+            AddBook(7, "Judges", "Judg.", "Jdg.", "Jg.", "Jdgs.");
+            AddBook(8, "Ruth", "Ruth", "Rth.", "Ru.");
+            AddBook(9, "1 Samuel", "1 Sam.", "1 Sm.", "1 Sa.", "I Sam.", "1st Samuel");
+            AddBook(10, "2 Samuel", "2 Sam.", "2 Sm.", "2 Sa.", "II Sam.", "2nd Samuel");
+            AddBook(11, "1 Kings", "1 Kings", "1 Kgs", "1 Ki", "I Kgs", "1st Kings");
+            AddBook(12, "2 Kings", "2 Kings", "2 Kgs.", "2 Ki.", "II Kgs.", "2nd Kings");
+            AddBook(13, "1 Chronicles", "1 Chron.", "1 Chr.", "1 Ch.", "I Chron.", "1st Chronicles");
+            AddBook(14, "2 Chronicles", "2 Chron.", "2 Chr.", "2 Ch.", "II Chron.", "2nd Chronicles");
+            AddBook(15, "Ezra", "Ezra", "Ezr.", "Ez.");
+            AddBook(16, "Nehemiah", "Neh.", "Ne.");
+            AddBook(17, "Esther", "Est.", "Esth.", "Es.");
+            AddBook(18, "Job", "Job", "Jb.");
+            AddBook(19, "Psalms", "Ps.", "Pslm.", "Psa.", "Psm.", "Pss.");
+            AddBook(20, "Proverbs", "Prov.", "Pro.", "Prv.", "Pr.");
+            AddBook(21, "Ecclesiastes", "Eccles.", "Eccle.", "Ecc.", "Ec.", "Qoh.");
+            AddBook(22, "Song of Solomon", "Song", "SOS.", "Cant.");
+            AddBook(23, "Isaiah", "Isa.", "Is.");
+            AddBook(24, "Jeremiah", "Jer.", "Je.", "Jr.");
+            AddBook(25, "Lamentations", "Lam.", "La.");
+            AddBook(26, "Ezekiel", "Ezek.", "Eze.", "Ezk.");
+            AddBook(27, "Daniel", "Dan.", "Da.", "Dn.");
+            AddBook(28, "Hosea", "Hos.", "Ho.");
+            AddBook(29, "Joel", "Joel", "Jl.");
+            AddBook(30, "Amos", "Amos", "Am.");
+            AddBook(31, "Obadiah", "Obad.", "Ob.");
+            AddBook(32, "Jonah", "Jonah", "Jnh.", "Jon.");
+            AddBook(33, "Micah", "Mic.", "Mc.");
+            AddBook(34, "Nahum", "Nah.", "Na.");
+            AddBook(35, "Habakkuk", "Hab.", "Hb.");
+            AddBook(36, "Zephaniah", "Zeph.", "Zep.", "Zp.");
+            AddBook(37, "Haggai", "Hag.", "Hg.");
+            AddBook(38, "Zechariah", "Zech.", "Zec.", "Zc.");
+            AddBook(39, "Malachi", "Mal.", "Ml.");
 
-            // Add abbreviations
-            _abbreviations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                // Old Testament
-                { "Gen", "Genesis" },
-                { "Exo", "Exodus" },
-                { "Lev", "Leviticus" },
-                { "Num", "Numbers" },
-                { "Deu", "Deuteronomy" },
-                { "Jos", "Joshua" },
-                { "Jdg", "Judges" },
-                { "Rut", "Ruth" },
-                { "1Sa", "1 Samuel" },
-                { "2Sa", "2 Samuel" },
-                { "1Ki", "1 Kings" },
-                { "2Ki", "2 Kings" },
-                { "1Ch", "1 Chronicles" },
-                { "2Ch", "2 Chronicles" },
-                { "Ezr", "Ezra" },
-                { "Neh", "Nehemiah" },
-                { "Est", "Esther" },
-                { "Job", "Job" },
-                { "Psa", "Psalms" },
-                { "Pro", "Proverbs" },
-                { "Ecc", "Ecclesiastes" },
-                { "Sng", "Song of Solomon" },
-                { "Isa", "Isaiah" },
-                { "Jer", "Jeremiah" },
-                { "Lam", "Lamentations" },
-                { "Eze", "Ezekiel" },
-                { "Dan", "Daniel" },
-                { "Hos", "Hosea" },
-                { "Joe", "Joel" },
-                { "Amo", "Amos" },
-                { "Oba", "Obadiah" },
-                { "Jon", "Jonah" },
-                { "Mic", "Micah" },
-                { "Nah", "Nahum" },
-                { "Hab", "Habakkuk" },
-                { "Zep", "Zephaniah" },
-                { "Hag", "Haggai" },
-                { "Zec", "Zechariah" },
-                { "Mal", "Malachi" },
-
-                // New Testament
-                { "Mat", "Matthew" },
-                { "Mrk", "Mark" },
-                { "Luk", "Luke" },
-                { "Joh", "John" },
-                { "Jn", "John" },
-                { "Act", "Acts" },
-                { "Rom", "Romans" },
-                { "1Co", "1 Corinthians" },
-                { "2Co", "2 Corinthians" },
-                { "Gal", "Galatians" },
-                { "Eph", "Ephesians" },
-                { "Phi", "Philippians" },
-                { "Col", "Colossians" },
-                { "1Th", "1 Thessalonians" },
-                { "2Th", "2 Thessalonians" },
-                { "1Ti", "1 Timothy" },
-                { "2Ti", "2 Timothy" },
-                { "Tit", "Titus" },
-                { "Phm", "Philemon" },
-                { "Heb", "Hebrews" },
-                { "Jam", "James" },
-                { "1Pe", "1 Peter" },
-                { "2Pe", "2 Peter" },
-                { "1Jo", "1 John" },
-                { "2Jo", "2 John" },
-                { "3Jo", "3 John" },
-                { "Jud", "Jude" },
-                { "Rev", "Revelation" }
-            };
-
-            // Add all abbreviations to the bookNames dictionary
-            foreach (var abbrev in _abbreviations)
-            {
-                if (!_bookNames.ContainsKey(abbrev.Key))
-                {
-                    _bookNames[abbrev.Key] = _bookNames[abbrev.Value];
-                }
-            }
-
-            // Build _bookNumbers (number to full name) - using GroupBy to handle duplicates
-            _bookNumbers = _bookNames
-                .Where(kvp => !_abbreviations.ContainsKey(kvp.Key))
-                .GroupBy(kvp => kvp.Value)
-                .ToDictionary(g => g.Key, g => g.First().Key);
-
-            // Build _bookAbbreviations (number to abbreviation) - using GroupBy to handle duplicates
-            _bookAbbreviations = _abbreviations
-                .Where(kvp => _bookNames.ContainsKey(kvp.Value))
-                .GroupBy(kvp => _bookNames[kvp.Value])
-                .ToDictionary(g => g.Key, g => g.First().Key);
+            // New Testament
+            AddBook(40, "Matthew", "Matt.", "Mt.");
+            AddBook(41, "Mark", "Mark", "Mrk", "Mk", "Mr.");
+            AddBook(42, "Luke", "Luke", "Luk", "Lk");
+            AddBook(43, "John", "John", "Joh", "Jhn", "Jn");
+            AddBook(44, "Acts", "Acts", "Act", "Ac");
+            AddBook(45, "Romans", "Rom.", "Ro.", "Rm.");
+            AddBook(46, "1 Corinthians", "1 Cor.", "1 Co.", "I Cor.", "1st Corinthians");
+            AddBook(47, "2 Corinthians", "2 Cor.", "2 Co.", "II Cor.", "2nd Corinthians");
+            AddBook(48, "Galatians", "Gal.", "Ga.");
+            AddBook(49, "Ephesians", "Eph.", "Ephes.");
+            AddBook(50, "Philippians", "Phil.", "Php.", "Pp.");
+            AddBook(51, "Colossians", "Col.", "Co.");
+            AddBook(52, "1 Thessalonians", "1 Thess.", "1 Thes.", "I Thess.", "1st Thessalonians");
+            AddBook(53, "2 Thessalonians", "2 Thess.", "2 Thes.", "II Thess.", "2nd Thessalonians");
+            AddBook(54, "1 Timothy", "1 Tim.", "1 Ti.", "I Tim.", "1st Timothy");
+            AddBook(55, "2 Timothy", "2 Tim.", "2 Ti.", "II Tim.", "2nd Timothy");
+            AddBook(56, "Titus", "Titus", "Tit", "Ti");
+            AddBook(57, "Philemon", "Philem.", "Phm.", "Pm.");
+            AddBook(58, "Hebrews", "Heb.");
+            AddBook(59, "James", "James", "Jas", "Jm");
+            AddBook(60, "1 Peter", "1 Pet.", "1 Pe.", "I Pet.", "1st Peter");
+            AddBook(61, "2 Peter", "2 Pet.", "2 Pe.", "II Pet.", "2nd Peter");
+            AddBook(62, "1 John", "1 John", "1 Jhn.", "I John", "1st John");
+            AddBook(63, "2 John", "2 John", "2 Jhn.", "II John", "2nd John");
+            AddBook(64, "3 John", "3 John", "3 Jhn.", "III John", "3rd John");
+            AddBook(65, "Jude", "Jude", "Jud.", "Jd.");
+            AddBook(66, "Revelation", "Rev.", "Re.");
         }
 
         /// <summary>
         /// Loads localization from a text file.
-        /// Format: number abbreviation fullname (e.g., "1 Gen Genesis")
+        /// Format: number fullname abbreviation1, abbreviation2, abbreviation3, ...
+        /// (e.g., "1 Genesis Gen., Ge., Gn.")
         /// </summary>
         /// <param name="filePath">Path to the localization file.</param>
         public static void LoadFromFile(string filePath)
@@ -223,9 +159,8 @@ namespace Beblia.Sharp
             }
 
             _bookNames = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            _abbreviations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             _bookNumbers = new Dictionary<int, string>();
-            _bookAbbreviations = new Dictionary<int, string>();
+            _bookAbbreviations = new Dictionary<int, List<string>>();
 
             foreach (string line in File.ReadAllLines(filePath))
             {
@@ -235,17 +170,59 @@ namespace Beblia.Sharp
                     continue; // Skip empty lines and comments
                 }
 
+                // Split by space, max 3 parts: number, fullname, and rest (abbreviations)
                 string[] parts = trimmedLine.Split(new[] { ' ' }, 3, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length >= 3 && int.TryParse(parts[0], out int bookNumber))
                 {
-                    string abbreviation = parts[1];
-                    string fullName = parts[2];
+                    string fullName = parts[1];
+                    string abbreviationsStr = parts[2];
 
-                    _bookNames[fullName] = bookNumber;
-                    _bookNames[abbreviation] = bookNumber;
-                    _abbreviations[abbreviation] = fullName;
-                    _bookNumbers[bookNumber] = fullName;
-                    _bookAbbreviations[bookNumber] = abbreviation;
+                    // Parse abbreviations (comma-separated)
+                    string[] abbreviations = abbreviationsStr.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(a => a.Trim())
+                        .Where(a => !string.IsNullOrEmpty(a))
+                        .ToArray();
+
+                    // Use AddBook helper to add all mappings
+                    AddBook(bookNumber, fullName, abbreviations);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Loads localization from a string (used for embedded data).
+        /// Format: number fullname abbreviation1, abbreviation2, abbreviation3, ...
+        /// </summary>
+        /// <param name="localizationData">The localization data as a string.</param>
+        public static void LoadFromString(string localizationData)
+        {
+            _bookNames = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            _bookNumbers = new Dictionary<int, string>();
+            _bookAbbreviations = new Dictionary<int, List<string>>();
+
+            foreach (string line in localizationData.Split('\n'))
+            {
+                string trimmedLine = line.Trim();
+                if (string.IsNullOrEmpty(trimmedLine) || trimmedLine.StartsWith("#"))
+                {
+                    continue; // Skip empty lines and comments
+                }
+
+                // Split by space, max 3 parts: number, fullname, and rest (abbreviations)
+                string[] parts = trimmedLine.Split(new[] { ' ' }, 3, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length >= 3 && int.TryParse(parts[0], out int bookNumber))
+                {
+                    string fullName = parts[1];
+                    string abbreviationsStr = parts[2];
+
+                    // Parse abbreviations (comma-separated)
+                    string[] abbreviations = abbreviationsStr.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(a => a.Trim())
+                        .Where(a => !string.IsNullOrEmpty(a))
+                        .ToArray();
+
+                    // Use AddBook helper to add all mappings
+                    AddBook(bookNumber, fullName, abbreviations);
                 }
             }
         }
@@ -280,16 +257,54 @@ namespace Beblia.Sharp
 
         /// <summary>
         /// Gets the abbreviated book name for a given book number.
+        /// Returns the primary (first) abbreviation.
         /// </summary>
         /// <param name="bookNumber">The book number.</param>
         /// <returns>The abbreviated book name, or null if not found.</returns>
         public static string? GetBookAbbreviation(int bookNumber)
         {
-            if (_bookAbbreviations.TryGetValue(bookNumber, out string? abbreviation))
+            if (_bookAbbreviations.TryGetValue(bookNumber, out List<string>? abbreviations) && abbreviations.Count > 0)
             {
-                return abbreviation;
+                return abbreviations[0];
             }
             return null;
+        }
+
+        /// <summary>
+        /// Gets all abbreviated book names for a given book number.
+        /// </summary>
+        /// <param name="bookNumber">The book number.</param>
+        /// <returns>A list of abbreviations, or an empty list if not found.</returns>
+        public static List<string> GetBookAbbreviations(int bookNumber)
+        {
+            if (_bookAbbreviations.TryGetValue(bookNumber, out List<string>? abbreviations))
+            {
+                return new List<string>(abbreviations);
+            }
+            return new List<string>();
+        }
+
+        /// <summary>
+        /// Serializes the current localization data to a string format.
+        /// Format: number fullname abbreviation1, abbreviation2, ...
+        /// </summary>
+        /// <returns>Localization data as a string.</returns>
+        public static string SerializeToString()
+        {
+            var lines = new List<string>();
+            lines.Add("# Beblia Localization File");
+            lines.Add("# Format: number fullname abbreviation1, abbreviation2, abbreviation3, ...");
+            lines.Add("");
+
+            foreach (var bookNumber in _bookNumbers.Keys.OrderBy(k => k))
+            {
+                string fullName = _bookNumbers[bookNumber];
+                List<string> abbreviations = GetBookAbbreviations(bookNumber);
+                string abbreviationsStr = string.Join(", ", abbreviations);
+                lines.Add($"{bookNumber} {fullName} {abbreviationsStr}");
+            }
+
+            return string.Join("\n", lines);
         }
     }
 }
