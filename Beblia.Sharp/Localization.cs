@@ -192,7 +192,12 @@ namespace Beblia.Sharp
             // We need to split firstPart into book name and first abbreviation.
             string[] words = firstPart.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             
-            if (words.Length == 1)
+            if (words.Length == 0)
+            {
+                // No words found - invalid format
+                return false;
+            }
+            else if (words.Length == 1)
             {
                 // Single word - use it as both name and abbreviation
                 bookFullName = words[0];
