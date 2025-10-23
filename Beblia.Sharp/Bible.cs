@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Beblia.Sharp
@@ -112,6 +113,63 @@ namespace Beblia.Sharp
                 return GetVerse(bookNumber.Value, chapterNumber, verseNumber);
             }
             return null;
+        }
+
+        /// <summary>
+        /// Saves the Bible to a binary file (.beblia format).
+        /// </summary>
+        /// <param name="filePath">The path where the binary file will be saved.</param>
+        public void SaveBinary(string filePath)
+        {
+            using (FileStream stream = File.Create(filePath))
+            {
+                SaveBinary(stream);
+            }
+        }
+
+        /// <summary>
+        /// Saves the Bible to a binary stream (.beblia format).
+        /// </summary>
+        /// <param name="stream">The stream to write to.</param>
+        public void SaveBinary(Stream stream)
+        {
+            using (BinaryWriter writer = new BinaryWriter(stream, System.Text.Encoding.UTF8, true))
+            {
+                // Write a magic number/header to identify .beblia files
+                writer.Write("BEBLIA");
+                writer.Write((byte)1); // Version number
+                
+                // Write Translation and Status
+                writer.Write(Translation ?? string.Empty);
+                writer.Write(Status ?? string.Empty);
+                
+                // Write number of testaments
+                writer.Write(Testaments.Count);
+                
+                foreach (Testament testament in Testaments)
+                {
+                    writer.Write(testament.Name ?? string.Empty);
+                    writer.Write(testament.Books.Count);
+                    
+                    foreach (Book book in testament.Books)
+                    {
+                        writer.Write(book.Number);
+                        writer.Write(book.Chapters.Count);
+                        
+                        foreach (Chapter chapter in book.Chapters)
+                        {
+                            writer.Write(chapter.Number);
+                            writer.Write(chapter.Verses.Count);
+                            
+                            foreach (Verse verse in chapter.Verses)
+                            {
+                                writer.Write(verse.Number);
+                                writer.Write(verse.Text ?? string.Empty);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
