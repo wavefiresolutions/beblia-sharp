@@ -26,6 +26,7 @@ Console.WriteLine($"Verse texts match: {same}");
 // Test 4: Get verse by book name (case-insensitive)
 var verse3 = bibleBinary.GetVerse("Genesis", 1, 1);
 Console.WriteLine($"\nGenesis 1:1 (by name): {verse3?.Text ?? "Verse not found"}");
+Console.WriteLine($"  Metadata: {verse3?.BookName} (#{verse3?.BookNumber}), Chapter: {verse3?.ChapterNumber}, Verse: {verse3?.Number}");
 
 // Test 5: Get verse by abbreviation (case-insensitive)
 var verse4 = bibleBinary.GetVerse("Gen", 1, 1);

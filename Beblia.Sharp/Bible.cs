@@ -85,6 +85,25 @@ namespace Beblia.Sharp
         /// <returns>A list of verses in the chapter.</returns>
         public List<Verse> GetVerses(Chapter chapter)
         {
+            // We need to find which book this chapter belongs to
+            foreach (var testament in Testaments)
+            {
+                foreach (var book in testament.Books)
+                {
+                    if (book.Chapters.Contains(chapter))
+                    {
+                        // Found the book, populate verse metadata
+                        foreach (var verse in chapter.Verses)
+                        {
+                            verse.BookNumber = book.Number;
+                            verse.BookName = Localization.GetBookName(book.Number);
+                            verse.ChapterNumber = chapter.Number;
+                        }
+                        return chapter.Verses;
+                    }
+                }
+            }
+            
             return chapter.Verses;
         }
 
@@ -127,7 +146,16 @@ namespace Beblia.Sharp
         public Verse? GetVerse(int bookNumber, int chapterNumber, int verseNumber)
         {
             Chapter? chapter = GetChapter(bookNumber, chapterNumber);
-            return chapter?.Verses.FirstOrDefault(v => v.Number == verseNumber);
+            Verse? verse = chapter?.Verses.FirstOrDefault(v => v.Number == verseNumber);
+            
+            if (verse != null)
+            {
+                verse.BookNumber = bookNumber;
+                verse.BookName = Localization.GetBookName(bookNumber);
+                verse.ChapterNumber = chapterNumber;
+            }
+            
+            return verse;
         }
 
         /// <summary>
