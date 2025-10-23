@@ -9,8 +9,11 @@ A C# library for parsing and loading Bible data from XML and binary formats.
 - **Format Auto-Detection**: Automatically detects whether a file is XML or binary
 - **Query Methods**: Easy-to-use methods to query verses, chapters, and books
 - **Book Name Support**: Query using book names (e.g., "Genesis", "Matthew") or abbreviations (e.g., "Gen", "Jn") - case-insensitive
+- **Multiple Abbreviations**: Each book supports multiple abbreviations (e.g., "John", "Joh", "Jhn", "Jn")
+- **Period-Flexible Matching**: Abbreviations work with or without periods (e.g., "Gen" and "Gen." both work)
 - **Testament Enum**: Testament type is now an enum (Old/New)
 - **Quick Search**: Search for verses using natural reference formats like "JN 3:16" or "JOHN 3:1-5"
+- **Embedded Localization**: Book names and abbreviations are embedded in binary files and loaded automatically
 - **Editable Localization**: Load custom book names and abbreviations from a text file
 - **Converter Tool**: Command-line tool to convert XML Bibles to binary format
 
@@ -95,22 +98,30 @@ var verses = bible.GetVerses(genesis1);
 
 ### Custom Localization
 
-You can customize book names and abbreviations by loading a localization file:
+**New in v2:** Localization data is now automatically embedded in binary `.beblia` files and loaded automatically. Each book supports multiple abbreviations, and abbreviations work with or without periods (e.g., both "Gen." and "Gen" work).
+
+You can also customize book names and abbreviations by loading a localization file:
 
 ```csharp
 // Load custom localization from file
 Localization.LoadFromFile("localization.txt");
 ```
 
-Localization file format (one book per line):
+Localization file format (one book per line, with multiple comma-separated abbreviations):
 ```
-# Format: number abbreviation fullname
-1 Gen Genesis
-2 Exo Exodus
+# Format: number fullname abbreviation1, abbreviation2, abbreviation3, ...
+1 Genesis Gen., Ge., Gn.
+2 Exodus Ex., Exod., Exo.
 ...
-43 Joh John
+43 John John, Joh, Jhn, Jn
 ...
 ```
+
+**Features:**
+- Multiple abbreviations per book (e.g., John supports "John", "Joh", "Jhn", "Jn")
+- Abbreviations work with or without periods (e.g., "Gen" and "Gen." both work)
+- Case-insensitive matching (e.g., "GEN", "Gen", "gen" all work)
+- Localization automatically embedded in `.beblia` files (v2 format)
 
 ### Saving to Binary Format
 
@@ -147,12 +158,17 @@ The binary format offers several advantages:
 - **Smaller file size**: Typically 15-20% smaller than XML
 - **Faster loading**: Binary parsing is faster than XML parsing
 - **Same functionality**: All API methods work identically with both formats
+- **Embedded localization**: v2 format includes book names and abbreviations (automatically loaded)
+- **Backward compatible**: v1 binary files still work with default localization
 
 The format includes:
 - Magic header for format detection
-- Version number for future compatibility
+- Version number for future compatibility (currently v1 and v2)
 - Length-prefixed strings for efficient storage
+- Embedded localization data (v2 only)
 - Nested structure preserving testament → book → chapter → verse hierarchy
+
+**Note:** When converting XML to binary, the current localization settings are embedded into the file. This means the `.beblia` file will automatically use those book names and abbreviations when loaded, without requiring a separate localization file.
 
 ## Building
 
