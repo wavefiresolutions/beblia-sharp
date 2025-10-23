@@ -214,6 +214,9 @@ namespace Beblia.Sharp
                 return results; // Book not found
             }
 
+            // Get book name for populating the verse
+            string? bookName = Localization.GetBookName(bookNumber.Value);
+
             // Split chapter and verses
             string[] chapterVerseSplit = chapterVersePart.Split(':');
             if (chapterVerseSplit.Length != 2)
@@ -248,6 +251,9 @@ namespace Beblia.Sharp
                             Verse? verse = GetVerse(bookNumber.Value, chapterNumber, v);
                             if (verse != null)
                             {
+                                verse.BookNumber = bookNumber.Value;
+                                verse.BookName = bookName;
+                                verse.ChapterNumber = chapterNumber;
                                 results.Add(verse);
                             }
                         }
@@ -261,6 +267,9 @@ namespace Beblia.Sharp
                         Verse? verse = GetVerse(bookNumber.Value, chapterNumber, verseNumber);
                         if (verse != null)
                         {
+                            verse.BookNumber = bookNumber.Value;
+                            verse.BookName = bookName;
+                            verse.ChapterNumber = chapterNumber;
                             results.Add(verse);
                         }
                     }

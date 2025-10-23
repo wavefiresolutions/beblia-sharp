@@ -68,12 +68,13 @@ Console.WriteLine($"Book 43: {john?.Name} ({john?.Abbreviation})");
 Console.WriteLine($"\n=== Quick Search ===");
 var john316 = bibleBinary.Get("JN 3:16");
 Console.WriteLine($"JN 3:16: {john316[0].Text}");
+Console.WriteLine($"  Book: {john316[0].BookName} (#{john316[0].BookNumber}), Chapter: {john316[0].ChapterNumber}");
 
 var john31_2 = bibleBinary.Get("JOHN 3:1-2");
 Console.WriteLine($"\nJOHN 3:1-2 ({john31_2.Count} verses):");
 foreach (var verse in john31_2)
 {
-    Console.WriteLine($"  Verse {verse.Number}: {verse.Text?.Substring(0, Math.Min(60, verse.Text.Length))}...");
+    Console.WriteLine($"  {verse.BookName} {verse.ChapterNumber}:{verse.Number}: {verse.Text?.Substring(0, Math.Min(60, verse.Text.Length))}...");
 }
 
 // Test 10: Book name lookup
