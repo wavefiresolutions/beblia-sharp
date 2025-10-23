@@ -40,10 +40,22 @@ Console.WriteLine($"Testament.New = {Testament.New}");
 Console.WriteLine($"\n=== GetBooks() Methods ===");
 var allBooks = bibleBinary.GetBooks();
 Console.WriteLine($"Total books: {allBooks.Count}");
+foreach (var book in allBooks)
+{
+    Console.WriteLine($"{book.Number}. {book.Name}");
+}
 var oldTestamentBooks = bibleBinary.GetBooks(Testament.Old);
 Console.WriteLine($"Old Testament books: {oldTestamentBooks.Count}");
+foreach (var book in oldTestamentBooks)
+{
+    Console.WriteLine($"{book.Number}. {book.Name}");
+}
 var newTestamentBooks = bibleBinary.GetBooks(Testament.New);
 Console.WriteLine($"New Testament books: {newTestamentBooks.Count}");
+foreach (var book in newTestamentBooks)
+{
+    Console.WriteLine($"{book.Number}. {book.Name}");
+}
 
 // Test 8: Book info
 Console.WriteLine($"\n=== Book Information ===");
