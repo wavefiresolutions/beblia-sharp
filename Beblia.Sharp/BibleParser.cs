@@ -57,7 +57,7 @@ namespace Beblia.Sharp
             stream.Position = originalPosition; // Reset position
             
             // Check if it's a binary .beblia file
-            // Format: length-prefix (1 byte: 0x06) + "BEBLIA" (6 bytes) + version (1 byte: 0x01)
+            // Format: length-prefix (1 byte: 0x06) + "BEBLIA" (6 bytes) + version (1 byte)
             if (bytesRead >= 8 && 
                 header[0] == 0x06 && // Length of "BEBLIA"
                 header[1] == (byte)'B' && 
@@ -66,7 +66,7 @@ namespace Beblia.Sharp
                 header[4] == (byte)'L' && 
                 header[5] == (byte)'I' && 
                 header[6] == (byte)'A' &&
-                header[7] == 0x01) // Version
+                (header[7] == 0x01 || header[7] == 0x02)) // Version 1 or 2
             {
                 return LoadBinary(stream);
             }
@@ -100,7 +100,7 @@ namespace Beblia.Sharp
                 }
                 
                 byte version = reader.ReadByte();
-                if (version != 1)
+                if (version != 1 && version != 2)
                 {
                     throw new ArgumentException($"Unsupported binary format version: {version}");
                 }
@@ -110,6 +110,16 @@ namespace Beblia.Sharp
                     Translation = reader.ReadString(),
                     Status = reader.ReadString()
                 };
+                
+                // Version 2 includes embedded localization
+                if (version == 2)
+                {
+                    string localizationData = reader.ReadString();
+                    if (!string.IsNullOrEmpty(localizationData))
+                    {
+                        Localization.LoadFromString(localizationData);
+                    }
+                }
                 
                 int testamentCount = reader.ReadInt32();
                 for (int t = 0; t < testamentCount; t++)

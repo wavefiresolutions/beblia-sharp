@@ -271,11 +271,15 @@ namespace Beblia.Sharp
             {
                 // Write a magic number/header to identify .beblia files
                 writer.Write("BEBLIA");
-                writer.Write((byte)1); // Version number
+                writer.Write((byte)2); // Version number (incremented to 2 for embedded localization)
                 
                 // Write Translation and Status
                 writer.Write(Translation ?? string.Empty);
                 writer.Write(Status ?? string.Empty);
+                
+                // Write embedded localization data
+                string localizationData = Localization.SerializeToString();
+                writer.Write(localizationData);
                 
                 // Write number of testaments
                 writer.Write(Testaments.Count);
