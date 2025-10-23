@@ -91,11 +91,18 @@ jobs:
         TAG_NAME="v${{ steps.get_version.outputs.version }}"
         echo "Creating new release with tag: $TAG_NAME"
         
-        # Create tag first
+        # Create tag first (skip if already exists)
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
-        git push origin "$TAG_NAME"
+        
+        # Check if tag exists and create only if it doesn't
+        if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+          echo "Tag $TAG_NAME already exists, skipping tag creation"
+        else
+          git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+          git push origin "$TAG_NAME"
+          echo "Created and pushed tag $TAG_NAME"
+        fi
         
         # Create release
         RESPONSE=$(curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
@@ -117,13 +124,16 @@ jobs:
       id: set_upload_url
       run: |
         if [ "${{ steps.check_release.outputs.exists }}" == "true" ]; then
+          echo "Using existing release for artifact upload"
           echo "upload_url=${{ steps.check_release.outputs.upload_url }}" >> $GITHUB_OUTPUT
         else
+          echo "Using newly created release for artifact upload"
           echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_OUTPUT
         fi
         
     - name: Upload NuGet Package to Release
       run: |
+        echo "Uploading NuGet package: Beblia.Sharp.${{ steps.get_version.outputs.version }}.nupkg"
         UPLOAD_URL="${{ steps.set_upload_url.outputs.upload_url }}"
         UPLOAD_URL="${UPLOAD_URL%\{*}"  # Remove {?name,label} part
         
@@ -132,8 +142,11 @@ jobs:
           --data-binary @"./artifacts/Beblia.Sharp.${{ steps.get_version.outputs.version }}.nupkg" \
           "${UPLOAD_URL}?name=Beblia.Sharp.${{ steps.get_version.outputs.version }}.nupkg"
         
+        echo "NuGet package uploaded successfully"
+        
     - name: Upload DLL to Release
       run: |
+        echo "Uploading DLL: Beblia.Sharp.dll"
         UPLOAD_URL="${{ steps.set_upload_url.outputs.upload_url }}"
         UPLOAD_URL="${UPLOAD_URL%\{*}"  # Remove {?name,label} part
         
@@ -141,3 +154,5 @@ jobs:
           -H "Content-Type: application/octet-stream" \
           --data-binary @"./Beblia.Sharp/bin/Release/netstandard2.1/Beblia.Sharp.dll" \
           "${UPLOAD_URL}?name=Beblia.Sharp.dll"
+        
+        echo "DLL uploaded successfully"
