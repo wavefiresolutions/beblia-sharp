@@ -1,9 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Beblia.Sharp
 {
+    /// <summary>
+    /// Provides localization mappings between book names and numbers.
+    /// </summary>
     public static class Localization
     {
+        /// <summary>
+        /// Maps book names to their corresponding book numbers.
+        /// </summary>
         public static readonly Dictionary<string, int> BookNames = new Dictionary<string, int>
         {
             // Old Testament
@@ -76,6 +83,39 @@ namespace Beblia.Sharp
             { "Jude", 65 },
             { "Revelation", 66 }
         };
+
+        /// <summary>
+        /// Reverse lookup dictionary for mapping book numbers to names.
+        /// </summary>
+        private static readonly Dictionary<int, string> BookNumbers = BookNames.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+
+        /// <summary>
+        /// Gets the book number for a given book name.
+        /// </summary>
+        /// <param name="bookName">The name of the book.</param>
+        /// <returns>The book number, or null if not found.</returns>
+        public static int? GetBookNumber(string bookName)
+        {
+            if (BookNames.TryGetValue(bookName, out int number))
+            {
+                return number;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the book name for a given book number.
+        /// </summary>
+        /// <param name="bookNumber">The book number.</param>
+        /// <returns>The book name, or null if not found.</returns>
+        public static string? GetBookName(int bookNumber)
+        {
+            if (BookNumbers.TryGetValue(bookNumber, out string? name))
+            {
+                return name;
+            }
+            return null;
+        }
     }
 }
 

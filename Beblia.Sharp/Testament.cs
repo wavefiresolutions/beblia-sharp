@@ -7,7 +7,7 @@ namespace Beblia.Sharp
     /// </summary>
     public class Testament
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public List<Book> Books { get; set; }
 
         public Testament()
