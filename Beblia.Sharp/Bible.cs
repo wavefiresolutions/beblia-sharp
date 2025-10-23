@@ -12,12 +12,12 @@ namespace Beblia.Sharp
         /// <summary>
         /// The translation name, e.g., "English KJV".
         /// </summary>
-        public string Translation { get; set; }
+        public string? Translation { get; set; }
         
         /// <summary>
         /// The status of the translation, e.g., "Public Domain".
         /// </summary>
-        public string Status { get; set; }
+        public string? Status { get; set; }
         
         /// <summary>
         /// A list of testaments (e.g., "Old" and "New").
@@ -64,6 +64,54 @@ namespace Beblia.Sharp
         {
             Chapter? chapter = GetChapter(bookNumber, chapterNumber);
             return chapter?.Verses.FirstOrDefault(v => v.Number == verseNumber);
+        }
+
+        /// <summary>
+        /// Gets a specific book by its name.
+        /// </summary>
+        /// <param name="bookName">The name of the book (e.g., "Genesis", "Matthew").</param>
+        /// <returns>The Book object, or null if not found.</returns>
+        public Book? GetBook(string bookName)
+        {
+            int? bookNumber = Localization.GetBookNumber(bookName);
+            if (bookNumber.HasValue)
+            {
+                return GetBook(bookNumber.Value);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a specific chapter by its book name and chapter number.
+        /// </summary>
+        /// <param name="bookName">The name of the book.</param>
+        /// <param name="chapterNumber">The chapter number.</param>
+        /// <returns>The Chapter object, or null if not found.</returns>
+        public Chapter? GetChapter(string bookName, int chapterNumber)
+        {
+            int? bookNumber = Localization.GetBookNumber(bookName);
+            if (bookNumber.HasValue)
+            {
+                return GetChapter(bookNumber.Value, chapterNumber);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a specific verse by its book name, chapter, and verse number.
+        /// </summary>
+        /// <param name="bookName">The name of the book (e.g., "Genesis", "Matthew").</param>
+        /// <param name="chapterNumber">The chapter number.</param>
+        /// <param name="verseNumber">The verse number.</param>
+        /// <returns>The Verse object, or null if not found.</returns>
+        public Verse? GetVerse(string bookName, int chapterNumber, int verseNumber)
+        {
+            int? bookNumber = Localization.GetBookNumber(bookName);
+            if (bookNumber.HasValue)
+            {
+                return GetVerse(bookNumber.Value, chapterNumber, verseNumber);
+            }
+            return null;
         }
     }
 }
