@@ -8,6 +8,8 @@ namespace Beblia.Sharp
     public class Book
     {
         public int Number { get; set; }
+        public string? Name => Localization.GetBookName(Number);
+        public string? Abbreviation => Localization.GetBookAbbreviation(Number);
         public List<Chapter> Chapters { get; set; }
 
         public Book()

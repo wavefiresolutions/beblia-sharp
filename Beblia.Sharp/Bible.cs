@@ -21,13 +21,55 @@ namespace Beblia.Sharp
         public string? Status { get; set; }
         
         /// <summary>
-        /// A list of testaments (e.g., "Old" and "New").
+        /// A list of testaments (Old and New).
         /// </summary>
-        public List<Testament> Testaments { get; set; }
+        public List<TestamentData> Testaments { get; set; }
 
         public Bible()
         {
-            Testaments = new List<Testament>();
+            Testaments = new List<TestamentData>();
+        }
+
+        /// <summary>
+        /// Gets all books in the Bible in order (no nested chapter/verse info).
+        /// </summary>
+        /// <returns>A list of all books.</returns>
+        public List<Book> GetBooks()
+        {
+            return Testaments.SelectMany(t => t.Books).ToList();
+        }
+
+        /// <summary>
+        /// Gets all books in a specific testament (no nested chapter/verse info).
+        /// </summary>
+        /// <param name="testament">The testament (Old or New).</param>
+        /// <returns>A list of books in the specified testament.</returns>
+        public List<Book> GetBooks(Testament testament)
+        {
+            return Testaments
+                .Where(t => t.Testament == testament)
+                .SelectMany(t => t.Books)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets all chapters in a specific book (no nested verse info).
+        /// </summary>
+        /// <param name="book">The book.</param>
+        /// <returns>A list of chapters in the book.</returns>
+        public List<Chapter> GetChapters(Book book)
+        {
+            return book.Chapters;
+        }
+
+        /// <summary>
+        /// Gets all verses in a specific chapter (with verse text).
+        /// </summary>
+        /// <param name="chapter">The chapter.</param>
+        /// <returns>A list of verses in the chapter.</returns>
+        public List<Verse> GetVerses(Chapter chapter)
+        {
+            return chapter.Verses;
         }
 
         /// <summary>
@@ -116,6 +158,98 @@ namespace Beblia.Sharp
         }
 
         /// <summary>
+        /// Gets one or more verses using a quick search string format.
+        /// Supports formats like "JN 3:16", "JOHN 3:1-2", "JN 3:1,4,5-6".
+        /// </summary>
+        /// <param name="reference">The verse reference string (case-insensitive).</param>
+        /// <returns>A list of verses matching the reference, or an empty list if not found.</returns>
+        public List<Verse> Get(string reference)
+        {
+            List<Verse> results = new List<Verse>();
+            
+            if (string.IsNullOrWhiteSpace(reference))
+            {
+                return results;
+            }
+
+            // Parse the reference string
+            // Expected format: "BookName Chapter:Verse" or "BookName Chapter:Verse-Verse" or "BookName Chapter:Verse,Verse,Verse-Verse"
+            string trimmedRef = reference.Trim();
+            
+            // Split by space to separate book name from chapter:verse
+            int lastSpaceIndex = trimmedRef.LastIndexOf(' ');
+            if (lastSpaceIndex < 0)
+            {
+                return results; // Invalid format
+            }
+
+            string bookPart = trimmedRef.Substring(0, lastSpaceIndex).Trim();
+            string chapterVersePart = trimmedRef.Substring(lastSpaceIndex + 1).Trim();
+
+            // Get book number
+            int? bookNumber = Localization.GetBookNumber(bookPart);
+            if (!bookNumber.HasValue)
+            {
+                return results; // Book not found
+            }
+
+            // Split chapter and verses
+            string[] chapterVerseSplit = chapterVersePart.Split(':');
+            if (chapterVerseSplit.Length != 2)
+            {
+                return results; // Invalid format
+            }
+
+            if (!int.TryParse(chapterVerseSplit[0], out int chapterNumber))
+            {
+                return results; // Invalid chapter number
+            }
+
+            string versePart = chapterVerseSplit[1];
+            
+            // Parse verse specifications (can be single, range, or comma-separated)
+            string[] verseSpecs = versePart.Split(',');
+            
+            foreach (string verseSpec in verseSpecs)
+            {
+                string trimmedSpec = verseSpec.Trim();
+                
+                if (trimmedSpec.Contains('-'))
+                {
+                    // Range: "1-5"
+                    string[] rangeParts = trimmedSpec.Split('-');
+                    if (rangeParts.Length == 2 &&
+                        int.TryParse(rangeParts[0].Trim(), out int startVerse) &&
+                        int.TryParse(rangeParts[1].Trim(), out int endVerse))
+                    {
+                        for (int v = startVerse; v <= endVerse; v++)
+                        {
+                            Verse? verse = GetVerse(bookNumber.Value, chapterNumber, v);
+                            if (verse != null)
+                            {
+                                results.Add(verse);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Single verse
+                    if (int.TryParse(trimmedSpec, out int verseNumber))
+                    {
+                        Verse? verse = GetVerse(bookNumber.Value, chapterNumber, verseNumber);
+                        if (verse != null)
+                        {
+                            results.Add(verse);
+                        }
+                    }
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
         /// Saves the Bible to a binary file (.beblia format).
         /// </summary>
         /// <param name="filePath">The path where the binary file will be saved.</param>
@@ -146,9 +280,9 @@ namespace Beblia.Sharp
                 // Write number of testaments
                 writer.Write(Testaments.Count);
                 
-                foreach (Testament testament in Testaments)
+                foreach (TestamentData testament in Testaments)
                 {
-                    writer.Write(testament.Name ?? string.Empty);
+                    writer.Write((int)testament.Testament);
                     writer.Write(testament.Books.Count);
                     
                     foreach (Book book in testament.Books)
